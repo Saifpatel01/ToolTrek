@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image Converter Tool</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #ffffff;
+      color: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    .container {
+      background: #e6f0ff;
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    h1 {
+      color: #007BFF;
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      margin-bottom: 15px;
+    }
+
+    #preview-container {
+      margin-bottom: 15px;
+    }
+
+    #imagePreview {
+      max-width: 100%;
+      border: 2px solid #007BFF;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .controls {
+      margin: 10px 0;
+    }
+
+    label {
+      margin-right: 10px;
+      font-weight: bold;
+    }
+
+    select {
+      padding: 5px;
+      border-radius: 5px;
+    }
+
+    button {
+      background: #007BFF;
+      color: #fff;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Image Converter</h1>
+    <input type="file" id="imageInput" accept="image/*" />
+    
+    <div id="preview-container">
+      <img id="imagePreview" src="" alt="Image Preview" />
+    </div>
+
+    <div class="controls">
+      <label for="format">Convert to:</label>
+      <select id="format">
+        <option value="image/jpeg">JPG</option>
+        <option value="image/png">PNG</option>
+        <option value="image/webp">WebP</option>
+      </select>
+    </div>
+
+    <button id="convertBtn">Convert & Download</button>
+  </div>
+
+  <script>
+    const imageInput = document.getElementById("imageInput");
+    const imagePreview = document.getElementById("imagePreview");
+    const convertBtn = document.getElementById("convertBtn");
+    const formatSelect = document.getElementById("format");
+
+    let uploadedImage = null;
+
+    imageInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        imagePreview.src = event.target.result;
+        imagePreview.style.display = "block";
+        uploadedImage = new Image();
+        uploadedImage.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    convertBtn.addEventListener("click", () => {
+      if (!uploadedImage) {
+        alert("Please upload an image first.");
+        return;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = uploadedImage.width;
+      canvas.height = uploadedImage.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(uploadedImage, 0, 0);
+
+      const selectedFormat = formatSelect.value;
+      canvas.toBlob((blob) => {
+        const downloadLink = document.createElement("a");
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = `converted-image.${getExtension(selectedFormat)}`;
+        downloadLink.click();
+      }, selectedFormat, 0.9); // Compression level
+    });
+
+    function getExtension(mimeType) {
+      switch (mimeType) {
+        case "image/jpeg": return "jpg";
+        case "image/png": return "png";
+        case "image/webp": return "webp";
+        default: return "img";
+      }
+    }
+  </script>
+</body>
+</html>
